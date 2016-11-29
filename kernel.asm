@@ -8195,27 +8195,16 @@ picinit(void)
 80103fda:	c3                   	ret    
 
 80103fdb <pipealloc>:
-  int writeopen;  // write fd is still open
-};
-
-int
-pipealloc(struct file **f0, struct file **f1)
-{
 80103fdb:	55                   	push   %ebp
 80103fdc:	89 e5                	mov    %esp,%ebp
 80103fde:	83 ec 18             	sub    $0x18,%esp
-  struct pipe *p;
-
-  p = 0;
 80103fe1:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
-  *f0 = *f1 = 0;
 80103fe8:	8b 45 0c             	mov    0xc(%ebp),%eax
 80103feb:	c7 00 00 00 00 00    	movl   $0x0,(%eax)
 80103ff1:	8b 45 0c             	mov    0xc(%ebp),%eax
 80103ff4:	8b 10                	mov    (%eax),%edx
 80103ff6:	8b 45 08             	mov    0x8(%ebp),%eax
 80103ff9:	89 10                	mov    %edx,(%eax)
-  if((*f0 = filealloc()) == 0 || (*f1 = filealloc()) == 0)
 80103ffb:	e8 06 d0 ff ff       	call   80101006 <filealloc>
 80104000:	89 c2                	mov    %eax,%edx
 80104002:	8b 45 08             	mov    0x8(%ebp),%eax
@@ -8232,145 +8221,101 @@ pipealloc(struct file **f0, struct file **f1)
 80104023:	8b 00                	mov    (%eax),%eax
 80104025:	85 c0                	test   %eax,%eax
 80104027:	0f 84 b2 00 00 00    	je     801040df <pipealloc+0x104>
-    goto bad;
-  if((p = (struct pipe*)kalloc()) == 0)
 8010402d:	e8 83 ec ff ff       	call   80102cb5 <kalloc>
 80104032:	89 45 f4             	mov    %eax,-0xc(%ebp)
 80104035:	83 7d f4 00          	cmpl   $0x0,-0xc(%ebp)
 80104039:	0f 84 9f 00 00 00    	je     801040de <pipealloc+0x103>
-    goto bad;
-  p->readopen = 1;
 8010403f:	8b 45 f4             	mov    -0xc(%ebp),%eax
 80104042:	c7 80 3c 02 00 00 01 	movl   $0x1,0x23c(%eax)
 80104049:	00 00 00 
-  p->writeopen = 1;
 8010404c:	8b 45 f4             	mov    -0xc(%ebp),%eax
 8010404f:	c7 80 40 02 00 00 01 	movl   $0x1,0x240(%eax)
 80104056:	00 00 00 
-  p->nwrite = 0;
 80104059:	8b 45 f4             	mov    -0xc(%ebp),%eax
 8010405c:	c7 80 38 02 00 00 00 	movl   $0x0,0x238(%eax)
 80104063:	00 00 00 
-  p->nread = 0;
 80104066:	8b 45 f4             	mov    -0xc(%ebp),%eax
 80104069:	c7 80 34 02 00 00 00 	movl   $0x0,0x234(%eax)
 80104070:	00 00 00 
-  initlock(&p->lock, "pipe");
 80104073:	8b 45 f4             	mov    -0xc(%ebp),%eax
 80104076:	83 ec 08             	sub    $0x8,%esp
 80104079:	68 20 89 10 80       	push   $0x80108920
 8010407e:	50                   	push   %eax
 8010407f:	e8 36 10 00 00       	call   801050ba <initlock>
 80104084:	83 c4 10             	add    $0x10,%esp
-  (*f0)->type = FD_PIPE;
 80104087:	8b 45 08             	mov    0x8(%ebp),%eax
 8010408a:	8b 00                	mov    (%eax),%eax
 8010408c:	c7 00 01 00 00 00    	movl   $0x1,(%eax)
-  (*f0)->readable = 1;
 80104092:	8b 45 08             	mov    0x8(%ebp),%eax
 80104095:	8b 00                	mov    (%eax),%eax
 80104097:	c6 40 08 01          	movb   $0x1,0x8(%eax)
-  (*f0)->writable = 0;
 8010409b:	8b 45 08             	mov    0x8(%ebp),%eax
 8010409e:	8b 00                	mov    (%eax),%eax
 801040a0:	c6 40 09 00          	movb   $0x0,0x9(%eax)
-  (*f0)->pipe = p;
 801040a4:	8b 45 08             	mov    0x8(%ebp),%eax
 801040a7:	8b 00                	mov    (%eax),%eax
 801040a9:	8b 55 f4             	mov    -0xc(%ebp),%edx
 801040ac:	89 50 0c             	mov    %edx,0xc(%eax)
-  (*f1)->type = FD_PIPE;
 801040af:	8b 45 0c             	mov    0xc(%ebp),%eax
 801040b2:	8b 00                	mov    (%eax),%eax
 801040b4:	c7 00 01 00 00 00    	movl   $0x1,(%eax)
-  (*f1)->readable = 0;
 801040ba:	8b 45 0c             	mov    0xc(%ebp),%eax
 801040bd:	8b 00                	mov    (%eax),%eax
 801040bf:	c6 40 08 00          	movb   $0x0,0x8(%eax)
-  (*f1)->writable = 1;
 801040c3:	8b 45 0c             	mov    0xc(%ebp),%eax
 801040c6:	8b 00                	mov    (%eax),%eax
 801040c8:	c6 40 09 01          	movb   $0x1,0x9(%eax)
-  (*f1)->pipe = p;
 801040cc:	8b 45 0c             	mov    0xc(%ebp),%eax
 801040cf:	8b 00                	mov    (%eax),%eax
 801040d1:	8b 55 f4             	mov    -0xc(%ebp),%edx
 801040d4:	89 50 0c             	mov    %edx,0xc(%eax)
-  return 0;
 801040d7:	b8 00 00 00 00       	mov    $0x0,%eax
 801040dc:	eb 4e                	jmp    8010412c <pipealloc+0x151>
-  p = 0;
-  *f0 = *f1 = 0;
-  if((*f0 = filealloc()) == 0 || (*f1 = filealloc()) == 0)
-    goto bad;
-  if((p = (struct pipe*)kalloc()) == 0)
-    goto bad;
 801040de:	90                   	nop
-  (*f1)->pipe = p;
-  return 0;
-
-//PAGEBREAK: 20
- bad:
-  if(p)
 801040df:	83 7d f4 00          	cmpl   $0x0,-0xc(%ebp)
 801040e3:	74 0e                	je     801040f3 <pipealloc+0x118>
-    kfree((char*)p);
 801040e5:	83 ec 0c             	sub    $0xc,%esp
 801040e8:	ff 75 f4             	pushl  -0xc(%ebp)
 801040eb:	e8 2b eb ff ff       	call   80102c1b <kfree>
 801040f0:	83 c4 10             	add    $0x10,%esp
-  if(*f0)
 801040f3:	8b 45 08             	mov    0x8(%ebp),%eax
 801040f6:	8b 00                	mov    (%eax),%eax
 801040f8:	85 c0                	test   %eax,%eax
 801040fa:	74 11                	je     8010410d <pipealloc+0x132>
-    fileclose(*f0);
 801040fc:	8b 45 08             	mov    0x8(%ebp),%eax
 801040ff:	8b 00                	mov    (%eax),%eax
 80104101:	83 ec 0c             	sub    $0xc,%esp
 80104104:	50                   	push   %eax
 80104105:	e8 ba cf ff ff       	call   801010c4 <fileclose>
 8010410a:	83 c4 10             	add    $0x10,%esp
-  if(*f1)
 8010410d:	8b 45 0c             	mov    0xc(%ebp),%eax
 80104110:	8b 00                	mov    (%eax),%eax
 80104112:	85 c0                	test   %eax,%eax
 80104114:	74 11                	je     80104127 <pipealloc+0x14c>
-    fileclose(*f1);
 80104116:	8b 45 0c             	mov    0xc(%ebp),%eax
 80104119:	8b 00                	mov    (%eax),%eax
 8010411b:	83 ec 0c             	sub    $0xc,%esp
 8010411e:	50                   	push   %eax
 8010411f:	e8 a0 cf ff ff       	call   801010c4 <fileclose>
 80104124:	83 c4 10             	add    $0x10,%esp
-  return -1;
 80104127:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
-}
 8010412c:	c9                   	leave  
 8010412d:	c3                   	ret    
 
 8010412e <pipeclose>:
-
-void
-pipeclose(struct pipe *p, int writable)
-{
 8010412e:	55                   	push   %ebp
 8010412f:	89 e5                	mov    %esp,%ebp
 80104131:	83 ec 08             	sub    $0x8,%esp
-  acquire(&p->lock);
 80104134:	8b 45 08             	mov    0x8(%ebp),%eax
 80104137:	83 ec 0c             	sub    $0xc,%esp
 8010413a:	50                   	push   %eax
 8010413b:	e8 9c 0f 00 00       	call   801050dc <acquire>
 80104140:	83 c4 10             	add    $0x10,%esp
-  if(writable){
 80104143:	83 7d 0c 00          	cmpl   $0x0,0xc(%ebp)
 80104147:	74 23                	je     8010416c <pipeclose+0x3e>
-    p->writeopen = 0;
 80104149:	8b 45 08             	mov    0x8(%ebp),%eax
 8010414c:	c7 80 40 02 00 00 00 	movl   $0x0,0x240(%eax)
 80104153:	00 00 00 
-    wakeup(&p->nread);
 80104156:	8b 45 08             	mov    0x8(%ebp),%eax
 80104159:	05 34 02 00 00       	add    $0x234,%eax
 8010415e:	83 ec 0c             	sub    $0xc,%esp
@@ -8378,20 +8323,15 @@ pipeclose(struct pipe *p, int writable)
 80104162:	e8 41 0c 00 00       	call   80104da8 <wakeup>
 80104167:	83 c4 10             	add    $0x10,%esp
 8010416a:	eb 21                	jmp    8010418d <pipeclose+0x5f>
-  } else {
-    p->readopen = 0;
 8010416c:	8b 45 08             	mov    0x8(%ebp),%eax
 8010416f:	c7 80 3c 02 00 00 00 	movl   $0x0,0x23c(%eax)
 80104176:	00 00 00 
-    wakeup(&p->nwrite);
 80104179:	8b 45 08             	mov    0x8(%ebp),%eax
 8010417c:	05 38 02 00 00       	add    $0x238,%eax
 80104181:	83 ec 0c             	sub    $0xc,%esp
 80104184:	50                   	push   %eax
 80104185:	e8 1e 0c 00 00       	call   80104da8 <wakeup>
 8010418a:	83 c4 10             	add    $0x10,%esp
-  }
-  if(p->readopen == 0 && p->writeopen == 0){
 8010418d:	8b 45 08             	mov    0x8(%ebp),%eax
 80104190:	8b 80 3c 02 00 00    	mov    0x23c(%eax),%eax
 80104196:	85 c0                	test   %eax,%eax
@@ -8400,52 +8340,36 @@ pipeclose(struct pipe *p, int writable)
 8010419d:	8b 80 40 02 00 00    	mov    0x240(%eax),%eax
 801041a3:	85 c0                	test   %eax,%eax
 801041a5:	75 1f                	jne    801041c6 <pipeclose+0x98>
-    release(&p->lock);
 801041a7:	8b 45 08             	mov    0x8(%ebp),%eax
 801041aa:	83 ec 0c             	sub    $0xc,%esp
 801041ad:	50                   	push   %eax
 801041ae:	e8 95 0f 00 00       	call   80105148 <release>
 801041b3:	83 c4 10             	add    $0x10,%esp
-    kfree((char*)p);
 801041b6:	83 ec 0c             	sub    $0xc,%esp
 801041b9:	ff 75 08             	pushl  0x8(%ebp)
 801041bc:	e8 5a ea ff ff       	call   80102c1b <kfree>
 801041c1:	83 c4 10             	add    $0x10,%esp
 801041c4:	eb 0f                	jmp    801041d5 <pipeclose+0xa7>
-  } else
-    release(&p->lock);
 801041c6:	8b 45 08             	mov    0x8(%ebp),%eax
 801041c9:	83 ec 0c             	sub    $0xc,%esp
 801041cc:	50                   	push   %eax
 801041cd:	e8 76 0f 00 00       	call   80105148 <release>
 801041d2:	83 c4 10             	add    $0x10,%esp
-}
 801041d5:	90                   	nop
 801041d6:	c9                   	leave  
 801041d7:	c3                   	ret    
 
 801041d8 <pipewrite>:
-
-//PAGEBREAK: 40
-int
-pipewrite(struct pipe *p, char *addr, int n)
-{
 801041d8:	55                   	push   %ebp
 801041d9:	89 e5                	mov    %esp,%ebp
 801041db:	83 ec 18             	sub    $0x18,%esp
-  int i;
-
-  acquire(&p->lock);
 801041de:	8b 45 08             	mov    0x8(%ebp),%eax
 801041e1:	83 ec 0c             	sub    $0xc,%esp
 801041e4:	50                   	push   %eax
 801041e5:	e8 f2 0e 00 00       	call   801050dc <acquire>
 801041ea:	83 c4 10             	add    $0x10,%esp
-  for(i = 0; i < n; i++){
 801041ed:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
 801041f4:	e9 ad 00 00 00       	jmp    801042a6 <pipewrite+0xce>
-    while(p->nwrite == p->nread + PIPESIZE){  //DOC: pipewrite-full
-      if(p->readopen == 0 || proc->killed){
 801041f9:	8b 45 08             	mov    0x8(%ebp),%eax
 801041fc:	8b 80 3c 02 00 00    	mov    0x23c(%eax),%eax
 80104202:	85 c0                	test   %eax,%eax
@@ -8454,24 +8378,19 @@ pipewrite(struct pipe *p, char *addr, int n)
 8010420c:	8b 40 24             	mov    0x24(%eax),%eax
 8010420f:	85 c0                	test   %eax,%eax
 80104211:	74 19                	je     8010422c <pipewrite+0x54>
-        release(&p->lock);
 80104213:	8b 45 08             	mov    0x8(%ebp),%eax
 80104216:	83 ec 0c             	sub    $0xc,%esp
 80104219:	50                   	push   %eax
 8010421a:	e8 29 0f 00 00       	call   80105148 <release>
 8010421f:	83 c4 10             	add    $0x10,%esp
-        return -1;
 80104222:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
 80104227:	e9 a8 00 00 00       	jmp    801042d4 <pipewrite+0xfc>
-      }
-      wakeup(&p->nread);
 8010422c:	8b 45 08             	mov    0x8(%ebp),%eax
 8010422f:	05 34 02 00 00       	add    $0x234,%eax
 80104234:	83 ec 0c             	sub    $0xc,%esp
 80104237:	50                   	push   %eax
 80104238:	e8 6b 0b 00 00       	call   80104da8 <wakeup>
 8010423d:	83 c4 10             	add    $0x10,%esp
-      sleep(&p->nwrite, &p->lock);  //DOC: pipewrite-sleep
 80104240:	8b 45 08             	mov    0x8(%ebp),%eax
 80104243:	8b 55 08             	mov    0x8(%ebp),%edx
 80104246:	81 c2 38 02 00 00    	add    $0x238,%edx
@@ -8480,12 +8399,6 @@ pipewrite(struct pipe *p, char *addr, int n)
 80104250:	52                   	push   %edx
 80104251:	e8 67 0a 00 00       	call   80104cbd <sleep>
 80104256:	83 c4 10             	add    $0x10,%esp
-{
-  int i;
-
-  acquire(&p->lock);
-  for(i = 0; i < n; i++){
-    while(p->nwrite == p->nread + PIPESIZE){  //DOC: pipewrite-full
 80104259:	8b 45 08             	mov    0x8(%ebp),%eax
 8010425c:	8b 90 38 02 00 00    	mov    0x238(%eax),%edx
 80104262:	8b 45 08             	mov    0x8(%ebp),%eax
@@ -8493,12 +8406,6 @@ pipewrite(struct pipe *p, char *addr, int n)
 8010426b:	05 00 02 00 00       	add    $0x200,%eax
 80104270:	39 c2                	cmp    %eax,%edx
 80104272:	74 85                	je     801041f9 <pipewrite+0x21>
-        return -1;
-      }
-      wakeup(&p->nread);
-      sleep(&p->nwrite, &p->lock);  //DOC: pipewrite-sleep
-    }
-    p->data[p->nwrite++ % PIPESIZE] = addr[i];
 80104274:	8b 45 08             	mov    0x8(%ebp),%eax
 80104277:	8b 80 38 02 00 00    	mov    0x238(%eax),%eax
 8010427d:	8d 48 01             	lea    0x1(%eax),%ecx
@@ -8512,75 +8419,47 @@ pipewrite(struct pipe *p, char *addr, int n)
 80104298:	0f b6 10             	movzbl (%eax),%edx
 8010429b:	8b 45 08             	mov    0x8(%ebp),%eax
 8010429e:	88 54 08 34          	mov    %dl,0x34(%eax,%ecx,1)
-pipewrite(struct pipe *p, char *addr, int n)
-{
-  int i;
-
-  acquire(&p->lock);
-  for(i = 0; i < n; i++){
 801042a2:	83 45 f4 01          	addl   $0x1,-0xc(%ebp)
 801042a6:	8b 45 f4             	mov    -0xc(%ebp),%eax
 801042a9:	3b 45 10             	cmp    0x10(%ebp),%eax
 801042ac:	7c ab                	jl     80104259 <pipewrite+0x81>
-      wakeup(&p->nread);
-      sleep(&p->nwrite, &p->lock);  //DOC: pipewrite-sleep
-    }
-    p->data[p->nwrite++ % PIPESIZE] = addr[i];
-  }
-  wakeup(&p->nread);  //DOC: pipewrite-wakeup1
 801042ae:	8b 45 08             	mov    0x8(%ebp),%eax
 801042b1:	05 34 02 00 00       	add    $0x234,%eax
 801042b6:	83 ec 0c             	sub    $0xc,%esp
 801042b9:	50                   	push   %eax
 801042ba:	e8 e9 0a 00 00       	call   80104da8 <wakeup>
 801042bf:	83 c4 10             	add    $0x10,%esp
-  release(&p->lock);
 801042c2:	8b 45 08             	mov    0x8(%ebp),%eax
 801042c5:	83 ec 0c             	sub    $0xc,%esp
 801042c8:	50                   	push   %eax
 801042c9:	e8 7a 0e 00 00       	call   80105148 <release>
 801042ce:	83 c4 10             	add    $0x10,%esp
-  return n;
 801042d1:	8b 45 10             	mov    0x10(%ebp),%eax
-}
 801042d4:	c9                   	leave  
 801042d5:	c3                   	ret    
 
 801042d6 <piperead>:
-
-int
-piperead(struct pipe *p, char *addr, int n)
-{
 801042d6:	55                   	push   %ebp
 801042d7:	89 e5                	mov    %esp,%ebp
 801042d9:	53                   	push   %ebx
 801042da:	83 ec 14             	sub    $0x14,%esp
-  int i;
-
-  acquire(&p->lock);
 801042dd:	8b 45 08             	mov    0x8(%ebp),%eax
 801042e0:	83 ec 0c             	sub    $0xc,%esp
 801042e3:	50                   	push   %eax
 801042e4:	e8 f3 0d 00 00       	call   801050dc <acquire>
 801042e9:	83 c4 10             	add    $0x10,%esp
-  while(p->nread == p->nwrite && p->writeopen){  //DOC: pipe-empty
 801042ec:	eb 3f                	jmp    8010432d <piperead+0x57>
-    if(proc->killed){
 801042ee:	65 a1 04 00 00 00    	mov    %gs:0x4,%eax
 801042f4:	8b 40 24             	mov    0x24(%eax),%eax
 801042f7:	85 c0                	test   %eax,%eax
 801042f9:	74 19                	je     80104314 <piperead+0x3e>
-      release(&p->lock);
 801042fb:	8b 45 08             	mov    0x8(%ebp),%eax
 801042fe:	83 ec 0c             	sub    $0xc,%esp
 80104301:	50                   	push   %eax
 80104302:	e8 41 0e 00 00       	call   80105148 <release>
 80104307:	83 c4 10             	add    $0x10,%esp
-      return -1;
 8010430a:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
 8010430f:	e9 bf 00 00 00       	jmp    801043d3 <piperead+0xfd>
-    }
-    sleep(&p->nread, &p->lock); //DOC: piperead-sleep
 80104314:	8b 45 08             	mov    0x8(%ebp),%eax
 80104317:	8b 55 08             	mov    0x8(%ebp),%edx
 8010431a:	81 c2 34 02 00 00    	add    $0x234,%edx
@@ -8589,12 +8468,6 @@ piperead(struct pipe *p, char *addr, int n)
 80104324:	52                   	push   %edx
 80104325:	e8 93 09 00 00       	call   80104cbd <sleep>
 8010432a:	83 c4 10             	add    $0x10,%esp
-piperead(struct pipe *p, char *addr, int n)
-{
-  int i;
-
-  acquire(&p->lock);
-  while(p->nread == p->nwrite && p->writeopen){  //DOC: pipe-empty
 8010432d:	8b 45 08             	mov    0x8(%ebp),%eax
 80104330:	8b 90 34 02 00 00    	mov    0x234(%eax),%edx
 80104336:	8b 45 08             	mov    0x8(%ebp),%eax
@@ -8605,23 +8478,14 @@ piperead(struct pipe *p, char *addr, int n)
 80104346:	8b 80 40 02 00 00    	mov    0x240(%eax),%eax
 8010434c:	85 c0                	test   %eax,%eax
 8010434e:	75 9e                	jne    801042ee <piperead+0x18>
-      release(&p->lock);
-      return -1;
-    }
-    sleep(&p->nread, &p->lock); //DOC: piperead-sleep
-  }
-  for(i = 0; i < n; i++){  //DOC: piperead-copy
 80104350:	c7 45 f4 00 00 00 00 	movl   $0x0,-0xc(%ebp)
 80104357:	eb 49                	jmp    801043a2 <piperead+0xcc>
-    if(p->nread == p->nwrite)
 80104359:	8b 45 08             	mov    0x8(%ebp),%eax
 8010435c:	8b 90 34 02 00 00    	mov    0x234(%eax),%edx
 80104362:	8b 45 08             	mov    0x8(%ebp),%eax
 80104365:	8b 80 38 02 00 00    	mov    0x238(%eax),%eax
 8010436b:	39 c2                	cmp    %eax,%edx
 8010436d:	74 3d                	je     801043ac <piperead+0xd6>
-      break;
-    addr[i] = p->data[p->nread++ % PIPESIZE];
 8010436f:	8b 55 f4             	mov    -0xc(%ebp),%edx
 80104372:	8b 45 0c             	mov    0xc(%ebp),%eax
 80104375:	8d 1c 02             	lea    (%edx,%eax,1),%ebx
@@ -8635,38 +8499,24 @@ piperead(struct pipe *p, char *addr, int n)
 80104394:	8b 45 08             	mov    0x8(%ebp),%eax
 80104397:	0f b6 44 10 34       	movzbl 0x34(%eax,%edx,1),%eax
 8010439c:	88 03                	mov    %al,(%ebx)
-      release(&p->lock);
-      return -1;
-    }
-    sleep(&p->nread, &p->lock); //DOC: piperead-sleep
-  }
-  for(i = 0; i < n; i++){  //DOC: piperead-copy
 8010439e:	83 45 f4 01          	addl   $0x1,-0xc(%ebp)
 801043a2:	8b 45 f4             	mov    -0xc(%ebp),%eax
 801043a5:	3b 45 10             	cmp    0x10(%ebp),%eax
 801043a8:	7c af                	jl     80104359 <piperead+0x83>
 801043aa:	eb 01                	jmp    801043ad <piperead+0xd7>
-    if(p->nread == p->nwrite)
-      break;
 801043ac:	90                   	nop
-    addr[i] = p->data[p->nread++ % PIPESIZE];
-  }
-  wakeup(&p->nwrite);  //DOC: piperead-wakeup
 801043ad:	8b 45 08             	mov    0x8(%ebp),%eax
 801043b0:	05 38 02 00 00       	add    $0x238,%eax
 801043b5:	83 ec 0c             	sub    $0xc,%esp
 801043b8:	50                   	push   %eax
 801043b9:	e8 ea 09 00 00       	call   80104da8 <wakeup>
 801043be:	83 c4 10             	add    $0x10,%esp
-  release(&p->lock);
 801043c1:	8b 45 08             	mov    0x8(%ebp),%eax
 801043c4:	83 ec 0c             	sub    $0xc,%esp
 801043c7:	50                   	push   %eax
 801043c8:	e8 7b 0d 00 00       	call   80105148 <release>
 801043cd:	83 c4 10             	add    $0x10,%esp
-  return i;
 801043d0:	8b 45 f4             	mov    -0xc(%ebp),%eax
-}
 801043d3:	8b 5d fc             	mov    -0x4(%ebp),%ebx
 801043d6:	c9                   	leave  
 801043d7:	c3                   	ret    
