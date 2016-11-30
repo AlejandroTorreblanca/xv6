@@ -1,0 +1,19 @@
+Ejercicio1:
+(ficheros útiles. syscall.h, usys.s, vectors.S, syscall.c, sysfile.c, user.h) (grep uptime *.[chS]
+es útil pa ver los ficheros).
+syscall() (en syscall.c) es el punto donde se procesan las llamadas l sistema.
+
+Ejercicio2:
+
+
+3- todo el trapframe. 
+
+Ejercicio3:
+Ver commit. Modificar los ficheros de ej1.
+
+Ejercicio4:
+ver commit.
+sysfile.c (sys_dup) file.c(filedup)
+
+filedup pa aumentar en uno / abrirlo
+fileclose decrementa en 1 y si es ultimo lo cierra de verdad.
