@@ -45,14 +45,13 @@ sys_getpid(void)
 int
 sys_sbrk(void)
 {
+//Falta liberar memoria si el argumento es negativo
   int addr;
   int n;
 
   if(argint(0, &n) < 0)
     return -1;
   addr = proc->sz;
-  if(growproc(n) < 0)
-    return -1;
   return addr;
 }
 

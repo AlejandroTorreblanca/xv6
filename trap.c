@@ -13,6 +13,7 @@ struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
+extern int mappages(pde_t *, void *, uint, uint, int);
 
 void
 tvinit(void)
@@ -76,6 +77,35 @@ trap(struct trapframe *tf)
     cprintf("cpu%d: spurious interrupt at %x:%x\n",
             cpunum(), tf->cs, tf->eip);
     lapiceoi();
+    break;
+
+  case T_PGFLT:
+    if(proc == 0 || (tf->cs&3) == 0){
+      // In kernel, it must be our mistake.
+      cprintf("unexpected page fault from cpu %d eip %x (cr2=0x%x)\n",
+              tf->trapno, cpunum(), tf->eip, rcr2());
+      panic("page fault inside kernel");
+    }
+
+    // In user space, assume process misbehaved.
+//Definir mem, comprobar direccion virtual pertenece al proceso (no se salga del tamaño)
+    char * mem = kalloc();
+//Control de errores
+    if(mem == 0){
+      cprintf("allocuvm out of memory\n");
+    }
+    memset(mem, 0, PGSIZE);
+    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+      cprintf("pid %d %s: page fault on cpu %d "
+            "at addr 0x%x--kill proc\n",
+            proc->pid, proc->name, cpunum(), rcr2());  
+      kfree(mem);
+      proc->killed = 1;
+    }    
+    cprintf("pid %d %s: page fault on cpu %d "
+          "at addr 0x%x--allocated\n",
+          proc->pid, proc->name, cpunum(), rcr2());  
+
     break;
 
   //PAGEBREAK: 13
