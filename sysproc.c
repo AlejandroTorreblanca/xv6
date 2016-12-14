@@ -46,12 +46,20 @@ int
 sys_sbrk(void)
 {
 //Falta liberar memoria si el argumento es negativo
+//Redondear hacia arriba size al liberar (se hace ya en dealloc y si no lo ponemos)
   int addr;
   int n;
-
   if(argint(0, &n) < 0)
-    return -1;
+    return -1; 
   addr = proc->sz;
+  if((proc->sz+n)>=KERNBASE || (proc->sz+n)<0)
+    {
+      cprintf("virtual page error\n");
+      return -1;
+    }
+  if(n<0)
+	deallocuvm(proc->pgdir,addr,addr+n);
+  proc->sz+=n;
   return addr;
 }
 

@@ -87,15 +87,22 @@ trap(struct trapframe *tf)
       panic("page fault inside kernel");
     }
 
-    // In user space, assume process misbehaved.
-//Definir mem, comprobar direccion virtual pertenece al proceso (no se salga del tamaño)
     char * mem = kalloc();
-//Control de errores
     if(mem == 0){
       cprintf("allocuvm out of memory\n");
+      proc->killed=1;
+      break;
+    }
+    if(rcr2()>proc->sz)
+    {
+      cprintf("address out of proc memory\n");
+      proc->killed=1;
+      break;
     }
     memset(mem, 0, PGSIZE);
-    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+//Comprobar si rcr2 está en la página de guarda. Habrá que añadir un campo al proc que contega qué pagina es (en el exec lo metemos)
+    uint virAddr = (uint) PGROUNDDOWN(rcr2());
+    if(mappages(proc->pgdir, (char*)virAddr, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
       cprintf("pid %d %s: page fault on cpu %d "
             "at addr 0x%x--kill proc\n",
             proc->pid, proc->name, cpunum(), rcr2());  
@@ -107,6 +114,9 @@ trap(struct trapframe *tf)
           proc->pid, proc->name, cpunum(), rcr2());  
 
     break;
+
+
+
 
   //PAGEBREAK: 13
   default:
