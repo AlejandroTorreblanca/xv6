@@ -80,7 +80,7 @@ trap(struct trapframe *tf)
     break;
 
   case T_PGFLT:
-    if(proc == 0 || (tf->cs&3) == 0){
+    if(proc == 0 || ((tf->cs&3) == 0 && rcr2()>=KERNBASE)){
       // In kernel, it must be our mistake.
       cprintf("unexpected page fault from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpunum(), tf->eip, rcr2());
@@ -95,7 +95,14 @@ trap(struct trapframe *tf)
     }
     if(rcr2()>proc->sz)
     {
+      cprintf("sz %d rcr2 %x",proc->sz,rcr2());
       cprintf("address out of proc memory\n");
+      proc->killed=1;
+      break;
+    }
+    if(rcr2()>proc->ustack && rcr2()<(proc->ustack+PGSIZE))
+    {
+      cprintf("stack overflow\n");
       proc->killed=1;
       break;
     }
