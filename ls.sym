@@ -21,6 +21,7 @@
 00000df0 base
 00000df8 freep
 00000997 morecore
+00000000 
 0000036c strcpy
 00000000 fmtname
 00000724 printf

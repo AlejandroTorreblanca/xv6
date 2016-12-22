@@ -20,6 +20,7 @@
 00000b50 base
 00000b58 freep
 00000752 morecore
+00000000 
 00000127 strcpy
 000004df printf
 00000b34 argv

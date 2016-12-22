@@ -18,9 +18,7 @@ main(int argc, char* argv[])
     /*a[1030]=10;
 	printf(2,"ASDASD\n"); */
 	sbrk(4096);
-	char* ls[1];
-	ls[0]=argv[1];
 	if (fork()==0)
-		exec(ls[0],ls);
+		wait();	
 	exit();
 }

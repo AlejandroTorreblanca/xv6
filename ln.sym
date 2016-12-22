@@ -20,6 +20,7 @@
 00000a98 base
 00000aa0 freep
 000006c5 morecore
+00000000 
 0000009a strcpy
 00000452 printf
 00000286 memmove
